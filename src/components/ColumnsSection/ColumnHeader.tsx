@@ -1,3 +1,4 @@
+
 export default function ColumnHeader({
   name,
   number_of_tasks,
@@ -12,7 +13,7 @@ export default function ColumnHeader({
     <div className="w-full mb-5">
       <h2 className="flex font-bold text-[#828Fa3]">
         <div
-          className={`inline-block w-5 h-5 my-auto rounded-full mr-3   ${
+          className={`inline-block w-5 h-5 my-auto rounded-full mr-3 ${
             index % 3 == 0
               ? "bg-[#49c4e5]"
               : index % 3 == 1

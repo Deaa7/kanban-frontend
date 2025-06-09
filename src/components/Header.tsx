@@ -3,11 +3,9 @@
 import { useSelector } from "react-redux";
 
 //icons
-
 import { ChevronDown, EllipsisVertical } from "lucide-react";
 
 // components :
-
 import Logo from "./Logo";
 import {
   Popover,
@@ -20,11 +18,11 @@ import EditBoardDialog from "./Dialogs/EditBoardDialog";
 import SidebarDialog from "./Dialogs/SidebarDialog";
 
 //functions
-import { getSidebarState } from "@/features/board/boardSlice";
+import { getSidebarState } from "@/features/sidebar/sidebarSlice";
 
 export default function Header() {
   
-  let currentStateOfSidebar = useSelector(getSidebarState);
+  const currentStateOfSidebar = useSelector(getSidebarState);
   
   return (
     <>

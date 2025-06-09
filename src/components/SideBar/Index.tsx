@@ -7,14 +7,14 @@ import SideBarBottomSection from "./SideBarBottomSection";
 import AddBoardButton from "./AddBoardButton";
 
 //functions
-import { changeSidebarState, getSidebarState } from "@/features/board/boardSlice";
+import { changeSidebarState, getSidebarState } from "@/features/sidebar/sidebarSlice";
 
 //icons
 import { Eye } from "lucide-react";
 
 export default function SideBar() {
 
-  let showSidebar = useSelector(getSidebarState); // get the current state of sidebar (shown-true / hidden-false)
+  let showSidebar = useSelector(getSidebarState);
 
   let dispatch = useDispatch();
   
@@ -32,8 +32,6 @@ export default function SideBar() {
         <SideBarBottomSection />
         </div>}
    
-      {/* the button to show the sidebar */}
-      
       {!showSidebar &&
         <button className="flex justify-center w-[65px] h-fit bg-[#635FC7] hover:bg-[#a8a4ff] py-4 absolute left-0 bottom-5 rounded-r-full cursor-pointer
          lg:bottom-5 

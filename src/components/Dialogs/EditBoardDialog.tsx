@@ -1,7 +1,6 @@
 //hooks
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
 
 //components
 import {
@@ -11,13 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "../ui/dialog";
 
 //icons
 import { XIcon } from "lucide-react";
 
 //apis
+import axios from "axios";
 import {
   BaseURL,
   CreateColumn,
@@ -25,15 +24,14 @@ import {
   EditBoard,
   EditColumn,
 } from "@/API/Apis";
-import axios from "axios";
 
 //functions
-import { editBoard, getSelectedBoardInfo } from "@/features/board/boardSlice";
+import { editBoard } from "@/features/board/boardSlice";
+import { GetAllColumnsByBoardId } from "@/features/columns/columnSlice";
+import { toast } from "sonner";
 
-type ApiResponse<T> = {
-  // cached data type
-  data: T;
-};
+//type
+import { type AppDispatch, type columnType } from "@/types/types";
 
 type ColumnType = {
   name: string;
@@ -52,119 +50,66 @@ export default function EditBoardDialog({
 }: {
   children: React.ReactNode;
 }) {
-  let selectedBoardInfo = useSelector(getSelectedBoardInfo); // gets info of selected board
+  let selectedBoardInfo = {
+    name: localStorage.getItem("selected-board-name") ?? "",
+    id: parseInt(localStorage.getItem("selected-board") ?? "0"),
+  }; // gets info of selected board
 
-  // form input state
+  let columnsData: columnType[] = JSON.parse(
+    localStorage.getItem("columns") ?? "[]"
+  );
+
   let [{ name, currentColumns, deletedColumns }, setEditBoardState] =
     useState<EditBoardType>({
       name: selectedBoardInfo?.name ?? "",
-      currentColumns: [], // added columns or edited columns
+      currentColumns: columnsData, // added columns or edited columns
       deletedColumns: [], // deleted columns
     });
 
-  let dispatch = useDispatch();
-
-  let queryClient = useQueryClient();
-
-  // query key to get the info of columns from cache
-  let queryKey = [`board-id-${selectedBoardInfo?.id}`, `columns`];
-
-  // get the columns
-  useEffect(() => {
-    // we use cache to get columns
-    let cachedColumns =
-    queryClient.getQueryData<ApiResponse<ColumnType[]>>(queryKey);
-    
-
-    if (cachedColumns?.data)
-      setEditBoardState((prev) => {
-        return { ...prev, currentColumns: cachedColumns?.data ?? [] };
-      });
-  }, []);
-
-  let url = BaseURL + CreateColumn;
-  let CreateColumnQuery = useMutation({
-    mutationFn: (column: ColumnType) => axios.post(url, column),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`board-id-${selectedBoardInfo?.id}`, `columns`],
-      });
-    },
-  });
-
-  let UpdateColumnQuery = useMutation({
-    mutationFn: (column: ColumnType) => {
-      let url = BaseURL + EditColumn + column.id + "/";
-      return axios.put(url, column);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`board-id-${selectedBoardInfo?.id}`, `columns`],
-      });
-    },
-  });
-
-  let DeleteColumnQuery = useMutation({
-    mutationFn: (column: ColumnType) => {
-      let url = BaseURL + DeleteColumn + column.id + "/";
-      return axios.delete(url);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [`board-id-${selectedBoardInfo?.id}`, `columns`],
-      });
-    },
-  });
+  let dispatch = useDispatch<AppDispatch>();
 
   // form submit handler
   let EditBoardSubmitForm = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // 1) create/update/delete columns
-    // 2) update the cache
-    // 3) edit board and update store state.
+    //check all input fields .
+    let empty = false;
 
-    let columnsOperationsHandler = async () => {
-      currentColumns.forEach(async (column) => {
-        let columnSentObject: ColumnType = {
-          name: column.name,
-          board_id: selectedBoardInfo?.id ?? 1,
-          id: column.id,
-        };
-        let UpdateOrCreateColumnsHandler = async () => {
-          //create new column
-          if (column.id < 0) {
-            CreateColumnQuery.mutate(columnSentObject);
-          }
-          //update existed column
-          else {
-            UpdateColumnQuery.mutate(columnSentObject);
-          }
-        };
-        await UpdateOrCreateColumnsHandler();
-        
-      });
+    if (name.length <= 0) empty = true;
 
-      deletedColumns.forEach(async (column) => {
-        let columnSentObject: ColumnType = {
-          name: column.name,
-          board_id: selectedBoardInfo?.id ?? 1,
-          id: column.id,
-        };
+    currentColumns.forEach((e) => {
+      if (e.name.length <= 0) empty = true;
+    });
 
-        if (column.id > 0) {
-          DeleteColumnQuery.mutate(columnSentObject);
-        }
-      });
-    };
+    if (empty) {
+      toast.error("Can't save changes , there are errors");
+      return;
+    }
 
-    await columnsOperationsHandler();
+    for (let i = 0; i < currentColumns.length; i++) {
+      if (currentColumns[i].id < 0) {
+        let url = BaseURL + CreateColumn;
+        await axios.post(url, currentColumns[i]);
+      } else if (currentColumns[i].id > 0) {
+        let url = BaseURL + EditColumn + currentColumns[i].id + "/";
+        await axios.put(url, currentColumns[i]);
+      }
+    }
+
+    for (let i = 0; i < deletedColumns.length; i++) {
+      if (deletedColumns[i].id > 0) {
+        let url = BaseURL + DeleteColumn + deletedColumns[i].id + "/";
+        await axios.delete(url);
+      }
+    }
+
+    dispatch(GetAllColumnsByBoardId());
 
     let url = BaseURL + EditBoard + selectedBoardInfo?.id + "/"; // url for editing board by its id
-
     let boardSentObject = {
       name: name,
     };
+
     let boardResult = await axios.put(url, boardSentObject);
 
     dispatch(
@@ -173,57 +118,95 @@ export default function EditBoardDialog({
         id: boardResult.data.id,
       })
     );
+    toast.success("board edited successfully");
   };
 
   let EditBoardAddColumn = async () => {
     let obj: ColumnType = {
-      name: "",
+      name: "Column " + (currentColumns.length + 1).toString(),
       id: -1, // new added column has id = -1
       board_id: selectedBoardInfo?.id ?? 1,
     };
 
     let temp = currentColumns;
     temp.push(obj);
+
     setEditBoardState((prev) => {
-      return { ...prev, currentColumns: temp };
+      return {
+        ...prev,
+        currentColumns: temp,
+      };
     });
   };
 
-  let DeleteColumnHandler = (e: ColumnType) => {
-    let temp: ColumnType[] = currentColumns.filter(
-      (column) => column.id !== e.id
-    );
+  let DeleteColumnHandler = (e: ColumnType, index: number) => {
+    if (currentColumns.length <= 1) {
+      toast.error("you need to have at least one column in your board");
+      return;
+    }
 
+    let temp: ColumnType[] = currentColumns.filter((_, ind) => ind !== index);
     let temp2: ColumnType[] = deletedColumns;
-    temp2.push(e);
+
+    if (e.id > 0) {
+      temp2.push(e);
+    }
 
     setEditBoardState((prev) => {
-      return { ...prev, currentColumns: temp, deletedColumns: temp2 };
+      return {
+        ...prev,
+        currentColumns: temp,
+        deletedColumns: temp2,
+      };
     });
   };
 
+  let openChangeEditBoardHandler = (e: boolean) => {
+    if (!e) {
+      // close state
+      setEditBoardState({
+        name: selectedBoardInfo?.name ?? "",
+        currentColumns: columnsData,
+        deletedColumns: [],
+      });
+    }
+  };
+ 
   let ColumnsInputFieldsContainer = currentColumns?.map((e, index) => {
     return (
-      <div className="flex justify-between my-3" key={index}>
+      <div className="flex justify-between my-3 relative" key={"edit-board-column-input-field-"+index}>
         <input
           type="text"
+          value={e.name}
           name={`edit-board-column-input-field${index}`}
           id={`edit-board-column-input-field${index}`}
-          value={e.name}
-          className="py-2 px-3 dark:placeholder:opacity-50 outline-0 dark:focus:border-[#635FC7] w-full rounded-[5px]  border border-[#828Fa3] placeholder:text-[#bfbfc3]"
+          className={`py-2 px-3 dark:placeholder:opacity-50 outline-0 dark:focus:border-[#635FC7] w-full rounded-[5px]  border border-[#828Fa3] placeholder:text-[#bfbfc3]
+            ${
+              currentColumns[index].name.length <= 0
+                ? "border-[#ea5555] dark:border-[#ea5555] dark:focus:border-[#ea5555]"
+                : ""
+            }`}
           placeholder={index % 2 == 0 ? "Todo" : "Done"}
           onChange={(e) => {
-            let temp = currentColumns;
+            let temp: ColumnType[] = currentColumns;
             temp[index].name = e.target.value;
             setEditBoardState((previous) => {
-              return { ...previous, currentColumns: temp };
+              return {
+                ...previous,
+                currentColumns: temp,
+              };
             });
           }}
         />
+        {currentColumns[index].name.length <= 0 && (
+          <span className="text-[#ea5555] absolute top-2 not-sm:text-xs not-sm:top-3 right-10">
+            Can't be empty
+          </span>
+        )}
         <div
           className="py-2 cursor-pointer pl-2"
           onClick={() => {
-            DeleteColumnHandler(e);
+            DeleteColumnHandler(e, index);
           }}>
           <XIcon size={26} strokeWidth={3} color="#828Fa3" />
         </div>
@@ -232,7 +215,7 @@ export default function EditBoardDialog({
   });
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={(e) => openChangeEditBoardHandler(e)}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         showCloseButton={false}
@@ -242,7 +225,7 @@ export default function EditBoardDialog({
         </DialogHeader>
         <DialogDescription></DialogDescription>
         <form action="" onSubmit={(e) => EditBoardSubmitForm(e)}>
-          <div id="edit-board-name-input-container">
+          <div id="edit-board-name-input-container" className="relative">
             <label
               htmlFor="edit-board-name-input-field"
               className="block text-[#828Fa3] dark:text-white font-bold mb-2  text-sm">
@@ -252,15 +235,26 @@ export default function EditBoardDialog({
               type="text"
               name="edit-board-name-input-field"
               id="edit-board-name-input-field"
-              className="py-2 px-3 w-full dark:placeholder:opacity-50 outline-0 dark:focus:border-[#635FC7] border rounded-[5px] border-[#828Fa3]  placeholder:text-[#bfbfc3]"
+              className={`py-2 px-3 w-full dark:placeholder:opacity-50 outline-0 dark:focus:border-[#635FC7] border rounded-[5px] border-[#828Fa3]  placeholder:text-[#bfbfc3]
+                 ${
+                   name.length <= 0
+                     ? "border-[#ea5555] dark:border-[#ea5555] dark:focus:border-[#ea5555]"
+                     : ""
+                 }`}
               placeholder="e.g. Web Design"
-              value={name}
+              // value={name}
+              defaultValue={name}
               onChange={(e) =>
                 setEditBoardState((prev) => {
                   return { ...prev, name: e.target.value };
                 })
               }
             />
+            {name.length <= 0 && (
+              <span className="text-[#ea5555] absolute top-9 not-sm:text-xs not-sm:top-10 right-1">
+                Can't be empty
+              </span>
+            )}
           </div>
 
           <div id="edit-board-columns-container" className="mt-5">
@@ -281,9 +275,11 @@ export default function EditBoardDialog({
               + Add New Column
             </div>
           </div>
-          <DialogClose className="w-full bg-[#635FC7] rounded-full py-2 mt-7 text-white hover:bg-[#a8a4ff] font-bold cursor-pointer">
-            <input type="submit" value="Save Change" />
-          </DialogClose>
+          <input
+            type="submit"
+            value="Save Change"
+            className="w-full bg-[#635FC7] rounded-full py-2 mt-7 text-white hover:bg-[#a8a4ff] font-bold cursor-pointer"
+          />
         </form>
       </DialogContent>
     </Dialog>

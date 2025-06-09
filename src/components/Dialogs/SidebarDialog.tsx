@@ -1,20 +1,19 @@
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
+//hooks
+import { useState } from "react";
+
+//components
 import BoardItemsList from "../SideBar/BoardItemsList";
 import DarkLightThemeSwitch from "../SideBar/DarkLightThemeSwitch";
-import { useState } from "react";
 import AddBoardButton from "../SideBar/AddBoardButton";
+
 
 export default function SidebarDialog({
   children,
-}: // setOpen
+}: 
 {
   children: React.ReactNode;
-  // setOpen : React.Dispatch<React.SetStateAction<boolean>>,
 }) {
-  /**
-   * I should get the task name and task id from session storage
-   * then delete the task using task's id and decrease number of tasks in its column
-   */
+  
 
   let [sidebarOpenBox, setSidebarOpenBox] = useState(false);
 
@@ -39,15 +38,5 @@ export default function SidebarDialog({
       </div>
     </>
   );
-  return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent
-        showCloseButton={false}
-        className="rounded-[5px] top-3/11  dark:bg-[#2b2c37] p-0 h-fit">
-        <BoardItemsList />
-        <DarkLightThemeSwitch />
-      </DialogContent>
-    </Dialog>
-  );
+ 
 }

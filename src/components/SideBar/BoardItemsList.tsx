@@ -1,16 +1,20 @@
+//hooks
 import { useSelector } from "react-redux";
+
+//function
 import {
   getBoardItems,
-  getNumberOfBoardItems,
   getSelectedBoardId,
 } from "../../features/board/boardSlice";
+
+//component
 import BoardItem from "./BoardItem";
-import AddBoardButton from "./AddBoardButton";
 
 export default function BoardItemsList() {
-  let numberOfCurrentBoards = useSelector(getNumberOfBoardItems);
-  let selectedBoard = useSelector(getSelectedBoardId);
+  
   let boards = useSelector(getBoardItems);
+  let numberOfCurrentBoards = boards.length;
+  let selectedBoard = useSelector(getSelectedBoardId);
 
   let boardList = (
     <div>
@@ -24,19 +28,20 @@ export default function BoardItemsList() {
           />
         );
       })}
-   
     </div>
   );
 
   return (
-    <div className="w-full  mt-10">
-      <p id="number-of-current-boards" className="indent-5 text-sm text-[#828Fa3] font-semibold mb-5
+    <div className="w-full mt-10">
+      <p
+        id="number-of-current-boards"
+        className="indent-5 text-sm text-[#828Fa3] font-semibold mb-5
        not-lg:text-xs
       ">
         ALL BOARDS ({numberOfCurrentBoards})
       </p>
       <div className=" max-h-[500px] not-sm:max-h-[250px] overflow-auto">
-         {boardList}
+        {boardList}
       </div>
     </div>
   );

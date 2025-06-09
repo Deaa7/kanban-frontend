@@ -1,6 +1,5 @@
 //hooks
 import { useDispatch, useSelector } from "react-redux";
-import { useQueryClient } from "@tanstack/react-query";
 
 //components
 import {
@@ -16,6 +15,7 @@ import {
 
 //functions
 import { deleteBoard, getSelectedBoardInfo } from "@/features/board/boardSlice";
+import { toast } from "sonner";
 
 //apis
 import axios from "axios";
@@ -28,7 +28,6 @@ export default function DeleteBoardDialog({
   }) {
   
   let selectedBoardInfo = useSelector(getSelectedBoardInfo);
-  let queryClient = useQueryClient();
 
   let dispatch = useDispatch();
 
@@ -42,10 +41,7 @@ export default function DeleteBoardDialog({
 
     dispatch(deleteBoard({ id: selectedBoardInfo?.id })); //delete the board from store state
   
-    // remove deleted columns from cached when deleting the board 
-    queryClient.removeQueries({
-      queryKey: [`board-id-${selectedBoardInfo?.id}`, `columns`]
-   })
+    toast.success('Board deleted successfully');
   };
 
   return (

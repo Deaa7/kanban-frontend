@@ -1,9 +1,12 @@
-
-import { changeSidebarState } from "@/features/board/boardSlice";
+//hooks
 import { useDispatch } from "react-redux";
 
- 
+//component
 import DarkLightThemeSwitch from "./DarkLightThemeSwitch";
+
+//functions
+import { changeSidebarState } from "@/features/sidebar/sidebarSlice";
+
 export default function SideBarBottomSection() {
   let dispatch = useDispatch();
 

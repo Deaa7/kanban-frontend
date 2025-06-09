@@ -1,6 +1,10 @@
+//hooks
 import { useDispatch } from "react-redux";
+
+//functions
 import { selectBoard } from "../../features/board/boardSlice";
-// import { Table2 } from 'react-lucide';
+
+//icons
 import { Table2 } from "lucide-react";
 export default function BoardItem({
   id,
@@ -27,7 +31,14 @@ export default function BoardItem({
        ? "bg-[#635FC7] text-white"
        : "text-[#828Fa3]  hover:bg-[#e4ebfa] hover:text-[#635FC7]"
    }   `}
-      onClick={() => dispatch(selectBoard(id))}>
+      onClick={() => {
+        dispatch(
+          selectBoard({
+            id: id,
+            name: name,
+          })
+        );
+      }}>
       <div className="w-[18%] flex justify-center">
         <Table2 size={22} strokeWidth={1} />
       </div>

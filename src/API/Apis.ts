@@ -25,17 +25,39 @@ export const GetAllColumnsByBoardIdURL: string = "/columns/get-all-columns-by-bo
 
 export const DeleteColumn: String = '/columns/delete-column/';
 
-export const IncreaseNumberOfColumnTasks : String = "/tasks/increase-number-of-column-tasks/";
 
 // tasks
 
 export const CreateTask: string = "/tasks/create-task/";
 
-export const IncreaseNumberOfTaskSubtasks: string = "/subtasks/increase-number-of-task-subtasks/";
+export const GetAllTasksByColumnId: string = "/tasks/get-all-tasks-by-column-id/";
 
-export const GetAllTasksByColumnId : string = "/tasks/get-all-tasks-by-column-id/"
+export const GetAllTasksByBoardIdURL : string = "/tasks/get-all-tasks-by-board-id/"
 
+export const IncreaseNumberOfColumnTasks : string = "/tasks/increase-number-of-column-tasks/"
+
+export const DecreaseNumberOfColumnTasks : String = "/tasks/decrease-number-of-column-tasks/";
+
+export const UpdateTaskByTaskId : String = "/tasks/update-task/";
+
+export const DeleteTaskByTaskId : String = "/tasks/delete-task/";
 
 // subtasks
 
+export const IncreaseNumberOfTaskSubtasks: string = "/subtasks/increase-number-of-task-subtasks/";
+
 export const CreateSubtask: string = "/subtasks/create-subtask/";
+
+export const GetAllSubtasksByTaskId: string = "/subtasks/get-all-subtasks-by-task-id/";
+
+export const DeleteSubTaskById: string = "/subtasks/delete-subtask/";
+
+export const increaseNumberOfTaskSubtasks: string = "/subtasks/increase-number-of-task-subtasks/";
+
+export const decreaseNumberOfTaskSubtasks: string = "/subtasks/increase-number-of-task-subtasks/";
+
+export const increaseNumberOfTaskCompletedSubtasks: string = "/subtasks/increase-number-of-task-completed-subtasks/";
+
+export const decreaseNumberOfTaskCompletedSubtasks: string = "/subtasks/decrease-number-of-task-completed-subtasks/";
+
+export const UpdateSubtaskById: string = "/subtasks/update-subtask/";
