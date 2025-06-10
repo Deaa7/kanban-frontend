@@ -106,17 +106,20 @@ export default function EditTaskDialog({
     let current_column = localStorage.getItem("selected-column") ?? "0";
     let old_column = localStorage.getItem("old-selected-column") ?? "0";
 
-    let url = BaseURL + IncreaseNumberOfColumnTasks + current_column + "/";
-    await axios.post(url);
+    if (Math.min(parseInt(current_column), parseInt(old_column)) > 0) {
+      
+      let url = BaseURL + IncreaseNumberOfColumnTasks + current_column + "/";
+      await axios.post(url);
 
-    let url2 = BaseURL + DecreaseNumberOfColumnTasks + old_column + "/";
-    await axios.post(url2);
+      let url2 = BaseURL + DecreaseNumberOfColumnTasks + old_column + "/";
+      await axios.post(url2);
+    }
 
     let oldId: number = parseInt(
       localStorage.getItem("old-selected-column") ?? "0"
     );
 
-    if (oldId > 0 && oldId != parseInt(current_column) ) {
+    if (oldId > 0 && oldId != parseInt(current_column)) {
       let obj = {
         oldId: oldId,
         newId: parseInt(current_column),
@@ -140,10 +143,8 @@ export default function EditTaskDialog({
     };
 
     for (let i = 0; i < subtasksData.length; i++) {
-     
       newTaskObject.number_of_subtasks++;
       if (subtasksData[i].is_done) newTaskObject.number_of_completed_subtasks++;
-    
     }
 
     let url3 = BaseURL + UpdateTaskByTaskId + taskId + "/";
@@ -184,15 +185,13 @@ export default function EditTaskDialog({
         let url = BaseURL + UpdateSubtaskById + subtask.id.toString() + "/";
         await axios.put(url, subtask);
       } else {
-
         // newly added subtask
         let url = BaseURL + CreateSubtask;
         await axios.post(url, subtask);
-
       }
     }
 
-    toast.success('Changes saved successfully');
+    toast.success("Changes saved successfully");
   };
 
   let editTaskDialogSelectChangeHandler = async (e: string) => {
@@ -206,7 +205,9 @@ export default function EditTaskDialog({
 
   let SubtasksInputFieldsContainer = subtasksData.map((e, index) => {
     return (
-      <div className="flex justify-between my-3" key={'edit-task-subtask-input-field-'+index}>
+      <div
+        className="flex justify-between my-3"
+        key={"edit-task-subtask-input-field-" + index}>
         <input
           type="text"
           name={`subtask-input-field${index}`}
@@ -240,10 +241,10 @@ export default function EditTaskDialog({
     );
   });
 
-  let editTaskDialogSelectColumnOptions = columnsData.map((col , index) => {
+  let editTaskDialogSelectColumnOptions = columnsData.map((col, index) => {
     return (
       <SelectItem
-        key={'edit-task-column-select-'+index}
+        key={"edit-task-column-select-" + index}
         value={col.id.toString()}
         className="font-bold mb-2 text-[#828Fa3]">
         {col.name}
